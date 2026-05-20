@@ -1,16 +1,31 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import styles from './App.module.css'
 
-let nextId = 1
+const STORAGE_KEY = 'task-board-tasks'
+function loadTasks() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY)
+    return raw ? JSON.parse(raw) : []
+  } catch {
+    return []
+  }
+}
 
 export default function App() {
-  const [tasks, setTasks] = useState([])
+  const [tasks, setTasks] = useState(loadTasks)
   const [input, setInput] = useState('')
+
+  useEffect(() => {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(tasks))
+  }, [tasks])
 
   function addTask() {
     const text = input.trim()
     if (!text) return
-    setTasks(prev => [...prev, { id: nextId++, text, done: false }])
+    setTasks(prev => {
+      const id = prev.length > 0 ? Math.max(...prev.map(t => t.id)) + 1 : 1
+      return [...prev, { id, text, done: false }]
+    })
     setInput('')
   }
 
